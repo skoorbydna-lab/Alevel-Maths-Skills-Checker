@@ -9,7 +9,9 @@ body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.4 system-ui,sans-
 header{display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding:10px 16px;border-bottom:1px solid var(--ln);background:var(--pn)}
 h1{font:600 1.15rem Georgia,serif;margin:0 12px 0 0}
 .tabs button,select,.act{background:var(--bg);color:var(--tx);border:1px solid var(--ln);border-radius:6px;padding:7px 12px;font:inherit;cursor:pointer}
-.tabs button.on{background:var(--tx);color:var(--bg);font-weight:600}
+.tabs button[data-t]{--tc:var(--tx);color:var(--tc);border:2px solid var(--tc);font-weight:600}
+.tabs button[data-t="Y12 Maths"]{--tc:#f4b942}.tabs button[data-t="Y13 Maths"]{--tc:#b28dff}.tabs button[data-t="Y12 FM"]{--tc:#35d0e6}.tabs button[data-t="Y13 FM"]{--tc:#ff86c8}
+.tabs button[data-t].on{background:var(--tc);color:#0b0d10}
 .act{background:var(--tx);color:var(--bg);font-weight:600}
 select{max-width:300px}label{color:var(--mu);font-size:.85rem}
 main{flex:1;display:grid;grid-template-columns:1fr 1fr;gap:14px;padding:14px 16px}
@@ -27,6 +29,14 @@ sup{font-size:.65em;line-height:0}
 .mx{display:inline-grid;vertical-align:middle;border-left:2px solid currentColor;border-right:2px solid currentColor;border-radius:7px;padding:0 7px;margin:0 3px;gap:0 14px;line-height:1.45;text-align:center}.mx i{font-style:normal}
 .msg{grid-column:1/-1;color:var(--mu);text-align:center;padding:50px 10px;font-size:1.1rem}
 #mix{padding:12px 16px;background:var(--pn);border-bottom:1px solid var(--ln);columns:3 270px;font-size:.9rem}#mix details{break-inside:avoid;margin-bottom:6px}#mix .dis{color:var(--mu)}#mix .bar{column-span:all;display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+body{--sc:var(--P)}
+#ch,#sb{border:2px solid var(--sc);color:var(--sc);font-weight:600}#ch option,#sb option{background:var(--pn);color:var(--tx)}
+#ch option.cP,#ch optgroup.cP,#mix .cP{color:var(--P)}#ch option.cS,#ch optgroup.cS,#mix .cS{color:var(--S)}#ch option.cM,#ch optgroup.cM,#mix .cM{color:var(--M)}
+#go{background:var(--sc);color:#0b0d10}#mx{border-color:var(--sc)!important}
+#mix details{border-left:4px solid var(--ln);padding-left:8px}#mix details.cP{border-color:var(--P)}#mix details.cS{border-color:var(--S)}#mix details.cM{border-color:var(--M)}
+#mix label.cP:not(.dis){color:var(--P)}#mix label.cS:not(.dis){color:var(--S)}#mix label.cM:not(.dis){color:var(--M)}
+#hc{background:var(--bg)!important;color:var(--tx)!important;border:1px solid var(--ln)!important}
+body.hid header>*:not(h1):not(#hc){display:none!important}body.hid #mix{display:none}body.hid header{padding:4px 16px}
 @media(max-width:700px){main{grid-template-columns:1fr}}
 @media print{body{background:#fff;color:#000}header{display:none}.col,.q{border-color:#999;background:#fff}.n{color:#000;border-color:#000}.a{color:#060}}
 </style></head><body>
@@ -35,6 +45,7 @@ sup{font-size:.65em;line-height:0}
 <span class="tabs" id="tabs"></span>
 <select id="ch" aria-label="Chapter"></select>
 <select id="sb" aria-label="Subsection"></select>
+<button class="act" id="hc" title="Hide or show the controls">Hide controls</button>
 <button class="act" id="mx" style="background:var(--bg);color:var(--tx);border:1px solid var(--ln)">Mix topics</button>
 <label>Questions <select id="nq"></select></label>
 <button class="act" id="go">New questions</button>
@@ -2184,16 +2195,16 @@ const key=(i)=>KK(tab,sub(),i);
 function build(){
  $("tabs").innerHTML=Object.keys(T).map(t=>`<button class="${t==tab?"on":""}" data-t="${t}">${t}</button>`).join("");
  const cs=CH[tab],g={P:"Pure",S:"Statistics",M:"Mechanics"};let h="";
- for(const s of["P","S","M"]){const l=cs.map((c,i)=>[c,i]).filter(x=>x[0].s==s);if(l.length)h+=`<optgroup label="${g[s]}">`+l.map(([c,i])=>`<option value="${i}">${c.n}. ${c.nm}</option>`).join("")+"</optgroup>"}
+ for(const s of["P","S","M"]){const l=cs.map((c,i)=>[c,i]).filter(x=>x[0].s==s);if(l.length)h+=`<optgroup class="c${s}" label="${g[s]}">`+l.map(([c,i])=>`<option class="c${s}" value="${i}">${c.n}. ${c.nm}</option>`).join("")+"</optgroup>"}
  $("ch").innerHTML=h;$("ch").value=ci;fillSub();
 }
-function fillSub(){const c=sub();$("sb").innerHTML=`<option value="-1">All subsections</option>`+c.sb.map((s,i)=>`<option value="${i}">${c.n}.${i+1} ${s}${G[key(i)]?" ●":""}</option>`).join("");}
+function fillSub(){const c=sub();$("sb").innerHTML=`<option value="-1">All subsections</option>`+c.sb.map((s,i)=>`<option class="c${c.s}" value="${i}">${c.n}.${i+1} ${s}${G[key(i)]?" ●":""}</option>`).join("");}
 function pool(L){const v=+$("sb").value;const o=(M.size?[...M]:(v<0?sub().sb.map((_,i)=>i):[v]).map(key)).filter(k=>G[k]||GC[k]).map(k=>L&&GC[k]?GC[k]:[].concat(G[k]||[])).filter(a=>a.length);return o.length||M.size||!$("fill")||!$("fill").checked?o:(()=>{const e=sibs(L);return e.length?[e]:[]})()}
 function sibs(L){return sub().sb.map((_,i)=>key(i)).filter(k=>G[k]||GC[k]).map(k=>L&&GC[k]?GC[k]:[].concat(G[k]||[])).flat()}
 function one(L,col){const fs_=pool(L).flat(),used=Q[col].map(x=>x.f);let fresh=fs_.filter(f=>!used.includes(f));if(!fresh.length&&$("fill").checked&&!M.size){const ex=sibs(L).filter(f=>!used.includes(f));if(ex.length)fresh=ex}const c=fresh.length?fresh:fs_,sg_=t=>t.replace(/[0-9.]+/g,"#");let q;for(let k=0;k<40;k++){const f=pick(c);q=f(L);q.f=f;if(!Q[col].some(x=>x[0]==q[0]||(k<25&&sg_(x[0])==sg_(q[0]))))break}return q}
 function gen(){const n=+$("nq").value;Q=[[],[]];if(pool().length)for(let c=0;c<2;c++)for(let i=0;i<n;i++)Q[c].push(one(c,c));draw()}
 function fs(){const n=Q[0].length||5;document.documentElement.style.setProperty("--fs",((n<=3?2.3:n<=5?1.9:n<=7?1.6:1.35)*FZ)+"rem")}
-function draw(){const m=$("m"),c=sub();$("ch").style.borderColor="var(--"+c.s+")";
+function draw(){const m=$("m"),c=sub();document.body.style.setProperty("--sc","var(--"+c.s+")");
  if(!Q[0].length){m.innerHTML=`<div class="msg">${pool().length?"Press New questions.":"Questions for this subsection are still being written. Subsections marked ● are ready."}</div>`;return}
  const n=Q[0].length;fs();
  m.innerHTML=["Standard","Challenge"].map((t,ci)=>`<section class="col ${$("sa").dataset.on?"ans":""}" style="--cc:${ci?"var(--S)":"var(--"+c.s+")"}"><h2>${t}</h2>`+Q[ci].map((q,i)=>`<div class="q"><button class="n" data-c="${ci}" data-i="${i}" title="Swap this question">${i+1}</button><div class="t">${F(q[0])}<div class="a">${F(q[1])}</div></div></div>`).join("")+"</section>").join("")}
@@ -2207,9 +2218,10 @@ $("m").onclick=e=>{const b=e.target.closest(".n");if(b){const c=+b.dataset.c,i=+
 $("fm").onclick=()=>{FZ=Math.max(.5,+(FZ-.1).toFixed(2));fs()};$("fp").onclick=()=>{FZ=Math.min(2.2,+(FZ+.1).toFixed(2));fs()};
 const gn={P:"Pure",S:"Statistics",M:"Mechanics"},mxl=()=>$("mx").textContent=M.size?`Mix topics (${M.size})`:"Mix topics";
 function mixUI(){let h=`<div class=bar>${["P","S","M"].map(s=>`<button class=act data-s=${s} style="background:var(--${s})">All ${gn[s]}</button>`).join("")}<button class=act data-s=x>Clear mix</button><button class=act data-s=d>Done</button></div>`;
- CH[tab].forEach((c,ci)=>{const ks=c.sb.map((_,i)=>KK(tab,c,i)).filter(k=>G[k]),on=ks.filter(k=>M.has(k)).length;h+=`<details data-o="${c.s}${c.n}" ${mxo.has(c.s+c.n)?"open":""}><summary style="color:var(--${c.s})"><input type=checkbox data-c=${ci} ${on&&on==ks.length?"checked":""} ${on&&on<ks.length?"data-p=1":""} title="Select whole chapter"> ${c.n}. ${c.nm}${on?` <small>(${on}/${ks.length})</small>`:""}</summary>`+c.sb.map((s,i)=>{const k=KK(tab,c,i),ok=G[k];return`<label class="${ok?"":"dis"}" style="display:block;margin-left:18px"><input type=checkbox data-k="${k}" ${ok?"":"disabled"} ${M.has(k)?"checked":""}> ${s}</label>`}).join("")+"</details>"});
+ CH[tab].forEach((c,ci)=>{const ks=c.sb.map((_,i)=>KK(tab,c,i)).filter(k=>G[k]),on=ks.filter(k=>M.has(k)).length;h+=`<details class="c${c.s}" data-o="${c.s}${c.n}" ${mxo.has(c.s+c.n)?"open":""}><summary style="color:var(--${c.s})"><input type=checkbox data-c=${ci} ${on&&on==ks.length?"checked":""} ${on&&on<ks.length?"data-p=1":""} title="Select whole chapter"> ${c.n}. ${c.nm}${on?` <small>(${on}/${ks.length})</small>`:""}</summary>`+c.sb.map((s,i)=>{const k=KK(tab,c,i),ok=G[k];return`<label class="c${c.s} ${ok?"":"dis"}" style="display:block;margin-left:18px"><input type=checkbox data-k="${k}" ${ok?"":"disabled"} ${M.has(k)?"checked":""}> ${s}</label>`}).join("")+"</details>"});
  $("mix").innerHTML=h;$("mix").querySelectorAll("input[data-p]").forEach(i=>i.indeterminate=true);mxl()}
 const mxo=new Set();
+$("hc").onclick=()=>{const h=document.body.classList.toggle("hid");$("hc").textContent=h?"Show controls":"Hide controls"};
 $("mx").onclick=()=>{const m=$("mix");m.hidden=!m.hidden;if(!m.hidden)mixUI()};
 $("mix").onclick=e=>{const t=e.target,s=t.dataset.s;if(s=="d")$("mix").hidden=true;else if(s){if(s=="x")M.clear();else CH[tab].forEach(c=>{if(c.s==s)c.sb.forEach((_,i)=>{const k=KK(tab,c,i);if(G[k])M.add(k)})});mixUI();Q=[[],[]];draw()}else if(t.dataset.c!==undefined){const c=CH[tab][+t.dataset.c];c.sb.forEach((_,i)=>{const k=KK(tab,c,i);if(G[k])t.checked?M.add(k):M.delete(k)});mxo.clear();$("mix").querySelectorAll("details[open]").forEach(d=>mxo.add(d.dataset.o));mixUI();Q=[[],[]];draw()}else if(t.dataset.k){t.checked?M.add(t.dataset.k):M.delete(t.dataset.k);mxl();Q=[[],[]];draw()}};
 build();draw();
